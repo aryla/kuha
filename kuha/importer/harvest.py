@@ -69,14 +69,14 @@ def update_formats(provider, purge=False, dry_run=False):
         )
 
         removed = 0
-        for prefix, format_ in old_formats.iteritems():
+        for prefix, format_ in old_formats.items():
             if prefix not in new_formats:
                 if not dry_run:
                     format_.mark_as_deleted()
                 removed += 1
 
         added = 0
-        for prefix, (namespace, schema) in new_formats.iteritems():
+        for prefix, (namespace, schema) in new_formats.items():
             if not dry_run:
                 models.Format.create_or_update(prefix, namespace, schema)
             if prefix not in old_formats:
@@ -87,7 +87,7 @@ def update_formats(provider, purge=False, dry_run=False):
     except Exception as e:
         models.rollback()
         log.exception('Failed to update metadata formats: {0}'.format(e))
-        raise HarvestError(e.message)
+        raise HarvestError(str(e))
 
     else:
         if dry_run:
@@ -103,7 +103,7 @@ def update_formats(provider, purge=False, dry_run=False):
             )
         )
 
-        return new_formats.keys()
+        return list(new_formats.keys())
 
 
 def update_items(provider, purge=False, dry_run=False):
@@ -111,7 +111,7 @@ def update_items(provider, purge=False, dry_run=False):
     log.debug('Looking for added and removed items...')
 
     try:
-        new_identifiers = frozenset(map(unicode, provider.identifiers()))
+        new_identifiers = frozenset(list(map(str, provider.identifiers())))
 
         old_items = dict(
             (item.identifier, item)
@@ -119,7 +119,7 @@ def update_items(provider, purge=False, dry_run=False):
         )
 
         removed = 0
-        for identifier, item in old_items.iteritems():
+        for identifier, item in old_items.items():
             if identifier not in new_identifiers:
                 if not dry_run:
                     item.mark_as_deleted()
@@ -139,7 +139,7 @@ def update_items(provider, purge=False, dry_run=False):
     except Exception as e:
         models.rollback()
         log.exception('Failed to update items: {0}'.format(e))
-        raise HarvestError(e.message)
+        raise HarvestError(str(e))
     else:
         if dry_run:
             models.rollback()
@@ -170,7 +170,7 @@ def update_sets(provider, identifier, dry_run=False):
     if len(sets) == 0:
         return
     # Sort set specs by level.
-    sets.sort(key=lambda (spec, _): spec.count(u':'))
+    sets.sort(key=lambda spec: spec[0].count(':'))
     # TODO: make sure that sets contain the parent sets of all sets
     for spec, name in sets:
         if not dry_run:

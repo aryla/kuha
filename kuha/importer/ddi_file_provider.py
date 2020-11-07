@@ -213,7 +213,7 @@ def convert_to_dc(record):
             element.text = text
             root.append(element)
 
-    for dc_tag, ddi_paths in mapping.iteritems():
+    for dc_tag, ddi_paths in mapping.items():
         for ddi_path in ddi_paths:
             for element in record.findall(ddi_path):
                 add_field(dc_tag, element.text)

@@ -18,23 +18,23 @@ from ..models import (
 
 
 def make_format(prefix):
-    if prefix == u'ead':
+    if prefix == 'ead':
         return Format.create(
             prefix,
-            u'urn:isbn:1-931666-22-9',
-            u'http://www.loc.gov/ead/ead.xsd',
+            'urn:isbn:1-931666-22-9',
+            'http://www.loc.gov/ead/ead.xsd',
         )
-    elif prefix == u'oai_dc':
+    elif prefix == 'oai_dc':
         return Format.create(
             prefix,
-            u'http://www.openarchives.org/OAI/2.0/oai_dc/',
-            u'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
+            'http://www.openarchives.org/OAI/2.0/oai_dc/',
+            'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
         )
-    elif prefix == u'ddi':
+    elif prefix == 'ddi':
         return Format.create(
             prefix,
-            u'http://www.icpsr.umich.edu/DDI/Version2-0',
-            u'http://www.icpsr.umich.edu/DDI/Version2-0.dtd',
+            'http://www.icpsr.umich.edu/DDI/Version2-0',
+            'http://www.icpsr.umich.edu/DDI/Version2-0.dtd',
         )
 
 
@@ -61,11 +61,7 @@ class ModelTestCase(unittest.TestCase):
         # Wrap the test cases in a transaction.
         connection = self.engine.connect()
         self.transaction = connection.begin()
-        DBSession.configure(
-            bind=connection,
-            # Disable the ZopeTransactionExtension.
-            extension=[],
-        )
+        DBSession.configure(bind=connection)
         models._Base.metadata.bind = self.engine
 
         # Create tables.
@@ -129,8 +125,8 @@ class TestListItems(ModelTestCase):
         i1 = Item.create('qwe')
         i2 = Item.create('rty')
         i2.deleted = True
-        self.assertItemsEqual(Item.list(ignore_deleted=False), [i1, i2])
-        self.assertItemsEqual(Item.list(ignore_deleted=True), [i1])
+        self.assertCountEqual(Item.list(ignore_deleted=False), [i1, i2])
+        self.assertCountEqual(Item.list(ignore_deleted=True), [i1])
 
     def test_empty_list(self):
         self.assertEqual(Item.list(), [])
@@ -219,11 +215,11 @@ class TestListFormats(ModelTestCase):
         f3 = Format('ex3', 'urn:ex3', 'ex3.xsd')
         DBSession.add_all([f1, f2, f3])
 
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Format.list(ignore_deleted=False),
             [f1, f2, f3]
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Format.list(ignore_deleted=True),
             [f1, f3]
         )
@@ -238,7 +234,7 @@ class TestListFormats(ModelTestCase):
         Record.create('identifier', 'ex2', make_xml(f2))
         r4 = Record.create('identifier', 'ex4', None)
         r4.deleted = True
-        self.assertItemsEqual(Format.list('identifier', True), [f1, f2])
+        self.assertCountEqual(Format.list('identifier', True), [f1, f2])
 
     def test_item_has_no_formats(self):
         Format.create('a', 'urn:a', 'a.xsd')
@@ -255,8 +251,8 @@ class TestUpdateFormats(ModelTestCase):
         DBSession.query(Datestamp).one().datestamp = date
 
         # redundant update
-        f.update(u'http://www.icpsr.umich.edu/DDI/Version2-0',
-                 u'http://www.icpsr.umich.edu/DDI/Version2-0.dtd')
+        f.update('http://www.icpsr.umich.edu/DDI/Version2-0',
+                 'http://www.icpsr.umich.edu/DDI/Version2-0.dtd')
         self.assertIs(r.deleted, False)
         self.assertEqual(r.datestamp, date)
         self.assertEqual(Datestamp.get(), date)
@@ -283,7 +279,7 @@ class TestUpdateFormats(ModelTestCase):
 
         self.assertIs(f1, orig)
         self.assertEqual(f1.namespace, 'http://example.org/testa')
-        self.assertItemsEqual(
+        self.assertCountEqual(
             DBSession.query(Format.prefix).all(),
             [('a',), ('b',)]
         )
@@ -355,13 +351,13 @@ class TestCreateRecord(ModelTestCase):
 
     def test_xml_root_in_wrong_namespace(self):
         Item.create('abcde')
-        f = make_format(u'ddi')
+        f = make_format('ddi')
         xml = make_xml(f)
-        f.namespace = u'http://www.icpsr.umich.edu/DDI/wrong-namespace'
+        f.namespace = 'http://www.icpsr.umich.edu/DDI/wrong-namespace'
 
         with self.assertRaises(ValueError) as cm:
-            Record.create(u'abcde', u'ddi', xml)
-        self.assertIn('wrong xml namespace', cm.exception.message)
+            Record.create('abcde', 'ddi', xml)
+        self.assertIn('wrong xml namespace', str(cm.exception))
 
     def test_xml_without_schema(self):
         data = '''
@@ -370,36 +366,34 @@ class TestCreateRecord(ModelTestCase):
                 <title>Test Record Title</title>
             </test>
         '''
-        Item.create(u'id')
-        f = make_format(u'ead')
+        Item.create('id')
+        f = make_format('ead')
         with self.assertRaises(ValueError) as cm:
-            Record.create(u'id', u'ead', data)
-        self.assertIn('no schema location', cm.exception.message)
+            Record.create('id', 'ead', data)
+        self.assertIn('no schema location', str(cm.exception))
 
     def test_xml_wrong_schema(self):
-        Item.create(u'id')
-        f = make_format(u'oai_dc')
+        Item.create('id')
+        f = make_format('oai_dc')
         xml = make_xml(f)
-        f.schema = u'http://wrong.location/oai_dc.xsd'
+        f.schema = 'http://wrong.location/oai_dc.xsd'
         with self.assertRaises(ValueError) as cm:
-            Record.create(u'id', u'oai_dc', xml)
-        self.assertIn('wrong schema location', cm.exception.message)
+            Record.create('id', 'oai_dc', xml)
+        self.assertIn('wrong schema location', str(cm.exception))
 
     def test_non_existent_prefix(self):
         Item.create('a')
         with self.assertRaises(ValueError) as cm:
             Record.create_or_update('a', 'oai_dc', '<asd/>')
-        self.assertIn('non-existent metadata prefix',
-                      cm.exception.message)
-        self.assertIn('oai_dc', cm.exception.message)
+        self.assertIn('non-existent metadata prefix', str(cm.exception))
+        self.assertIn('oai_dc', str(cm.exception))
 
     def test_non_existent_identifier(self):
         f = Format.create('a', 'http://a', 'a.xsd')
         with self.assertRaises(ValueError) as cm:
             Record.create_or_update('item', 'a', make_xml(f))
-        self.assertIn('non-existent identifier',
-                      cm.exception.message)
-        self.assertIn('item', cm.exception.message)
+        self.assertIn('non-existent identifier', str(cm.exception))
+        self.assertIn('item', str(cm.exception))
 
 
 class TestListRecords(ModelTestCase):
@@ -409,7 +403,7 @@ class TestListRecords(ModelTestCase):
 
         # Create some test data.
         self.items = [
-            Item.create('item{0}'.format(i)) for i in xrange(1, 4)
+            Item.create('item{0}'.format(i)) for i in range(1, 4)
         ]
         formats = [
             Format.create(
@@ -417,7 +411,7 @@ class TestListRecords(ModelTestCase):
                 'ns{0}'.format(i),
                 'schema.xsd',
             )
-            for i in xrange(1, 4)
+            for i in range(1, 4)
         ]
         self.records = [
             Record.create('item1', 'fmt1', make_xml(formats[0]),
@@ -432,45 +426,45 @@ class TestListRecords(ModelTestCase):
         self.records[3].deleted = True
 
     def test_get_all_records(self):
-        self.assertItemsEqual(Record.list(), self.records)
+        self.assertCountEqual(Record.list(), self.records)
 
     def test_get_records_by_format(self):
-        self.assertItemsEqual(Record.list(metadata_prefix='invalid'), [])
-        self.assertItemsEqual(
+        self.assertCountEqual(Record.list(metadata_prefix='invalid'), [])
+        self.assertCountEqual(
             Record.list(metadata_prefix='fmt1'),
             [self.records[0], self.records[2]]
         )
 
     def test_get_records_from_date(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(from_date=datetime(1970, 1, 1, 0, 0, 0)),
             self.records[0:4]
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(from_date=datetime(2014, 1, 4, 18, 0, 2)),
             self.records[1:3]
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(from_date=datetime(2014, 1, 4, 18, 0, 3)),
             self.records[1:2]
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(from_date=datetime(3000, 1, 1, 0, 0, 0)),
             []
         )
 
     def test_get_records_until_date(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(until_date=datetime(2014, 2, 22, 14, 45, 1)),
             self.records[0:4],
 
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(until_date=datetime(2013, 3, 19, 11, 1, 54)),
             [self.records[0], self.records[3]],
 
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(until_date=datetime(2013, 3, 19, 11, 1, 53)),
             [],
 
@@ -478,7 +472,7 @@ class TestListRecords(ModelTestCase):
 
     def test_get_records_in_range(self):
         # normal range
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(from_date=datetime(2013, 3, 19, 11, 1, 54),
              until_date=datetime(2014, 2, 22, 14, 44, 59)),
             [self.records[0], self.records[2], self.records[3]],
@@ -486,7 +480,7 @@ class TestListRecords(ModelTestCase):
         )
 
         # same from_date and until_date
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(from_date=datetime(2014, 1, 4, 18, 0, 2),
              until_date=datetime(2014, 1, 4, 18, 0, 2)),
             self.records[2:3],
@@ -494,7 +488,7 @@ class TestListRecords(ModelTestCase):
         )
 
         # no records in range
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(from_date=datetime(2013, 3, 19, 11, 1, 55),
              until_date=datetime(2014, 1, 4, 18, 0, 1)),
             [],
@@ -502,7 +496,7 @@ class TestListRecords(ModelTestCase):
         )
 
         # empty range
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(from_date=datetime(2014, 1, 4, 18, 0, 3),
              until_date=datetime(2014, 1, 4, 18, 0, 2)),
             [],
@@ -510,41 +504,41 @@ class TestListRecords(ModelTestCase):
         )
 
     def test_get_records_by_identifier(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(identifier='item1'),
             self.records[0:2]
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(identifier='invalid'),
             []
         )
 
     def test_get_records_resumption(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(limit=0),
             []
         )
         self.assertRaises(ValueError,
             lambda l: Record.list(limit=l), -1)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(limit=2),
             self.records[0:2]
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(offset='item2', limit=10),
             self.records[2:4]
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(offset='item1'),
             self.records
         )
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(offset='item9'),
             []
         )
 
     def test_ignore_deleted(self):
-        self.assertItemsEqual(
+        self.assertCountEqual(
             Record.list(ignore_deleted=True),
             self.records[0:3]
         )
@@ -577,7 +571,7 @@ class TestUpdateRecords(ModelTestCase):
                                    Record.prefix,
                                    Record.xml)
                             .all())
-        self.assertItemsEqual(records, [
+        self.assertCountEqual(records, [
             ('r', 'a', modified_data),
             ('s', 'a', data),
             ('t', 'a', data),
@@ -717,7 +711,7 @@ class TestEarliestDatestamp(ModelTestCase):
             datetime(2014, 3, 21, 13, 38, 00),
         ]
         f = Format.create('test', 'ns', 'schema.xsd')
-        for i in xrange(0, 3):
+        for i in range(0, 3):
             id_ = 'item{0}'.format(i)
             Item.create(id_)
             Record.create(id_, 'test', make_xml(f), dates[i])
@@ -735,11 +729,11 @@ class TestEarliestDatestamp(ModelTestCase):
             datetime(2014, 4, 30, 13, 28, 15),
             datetime(2014, 4, 30, 13, 28, 16),
         ]
-        items = [Item.create('item{0}'.format(i)) for i in xrange(1, 4)]
+        items = [Item.create('item{0}'.format(i)) for i in range(1, 4)]
         f = Format.create('test', 'ns', 'schema.xsd')
         records = [Record.create(items[i].identifier,
                                  'test', make_xml(f), dates[i])
-                   for i in xrange(0, 3)]
+                   for i in range(0, 3)]
         records[0].deleted = True
 
         self.assertEqual(
@@ -772,7 +766,7 @@ class TestPurgeDeleted(ModelTestCase):
         models.purge_deleted()
 
         items = [i for (i,) in DBSession.query(Item.identifier).all()]
-        self.assertItemsEqual(items, ['id2', 'id3'])
+        self.assertCountEqual(items, ['id2', 'id3'])
 
         self.assertEqual(DBSession.query(Format).all(), [format_z])
         self.assertEqual(DBSession.query(Record).all(), [existing])
@@ -814,7 +808,7 @@ class TestSets(ModelTestCase):
         Set.create('abcd', 'Set Name')
         Set.create('()()a-__!', 'Other Set')
         Set.create('()()a-__!:arst~\'**', 'Set Name')
-        self.assertItemsEqual(
+        self.assertCountEqual(
             DBSession.query(Set.spec, Set.name).all(),
             [('abcd', 'Set Name'),
              ('()()a-__!', 'Other Set'),
@@ -822,7 +816,7 @@ class TestSets(ModelTestCase):
         )
 
     def test_invalid_spec(self):
-        for spec in [u'äo-äo', 'abcd:', ':asd']:
+        for spec in ['äo-äo', 'abcd:', ':asd']:
             self.assertRaises(ValueError, Set.create, spec, 'Set Name')
 
     def test_create_or_update(self):
@@ -830,7 +824,7 @@ class TestSets(ModelTestCase):
         s2 = Set.create_or_update('efgh', 'Qwerty')
         s3 = Set.create_or_update('abcd', 'Ghjkl')
         self.assertIs(s1, s3)
-        self.assertItemsEqual(
+        self.assertCountEqual(
             DBSession.query(Set.spec, Set.name).all(),
             [('abcd', 'Ghjkl'), ('efgh', 'Qwerty')]
         )
@@ -839,7 +833,7 @@ class TestSets(ModelTestCase):
         Set.create('a', 'Set A')
         Set.create('b', 'Set B')
         Set.create('b:c', 'Set C')
-        self.assertItemsEqual(
+        self.assertCountEqual(
             [(s.spec, s.name) for s in Set.list()],
             [('a', 'Set A'), ('b', 'Set B'), ('b:c', 'Set C')]
         )

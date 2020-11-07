@@ -36,14 +36,14 @@ DC_NS     = 'http://purl.org/dc/elements/1.1/'
 
 
 """The schema location for OAI DC metadata."""
-OAI_DC_SCHEMA = u'http://www.openarchives.org/OAI/2.0/oai_dc.xsd'
+OAI_DC_SCHEMA = 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd'
 
 
 class Format(object):
     """Dummy metadata format."""
-    def __init__(self, prefix=u'oai_dc'):
+    def __init__(self, prefix='oai_dc'):
         self.prefix = prefix
-        if prefix == u'oai_dc':
+        if prefix == 'oai_dc':
             self.namespace = OAI_DC_NS
             self.schema = OAI_DC_SCHEMA
         else:
@@ -59,7 +59,7 @@ class Record(object):
                  set_specs=[],
                  deleted=False):
         self.identifier = identifier
-        self.prefix = u'oai_dc'
+        self.prefix = 'oai_dc'
         self.set_specs = set_specs
         self.datestamp = datetime(2014, 4, 2, 12, 34, 56)
         self.deleted = deleted
@@ -150,7 +150,7 @@ class TestErrorTemplate(unittest.TestCase):
         )
 
     def test_invalid_xml_chars(self):
-        identifier = u'\u0000 \u000b \ud888 \uffff'
+        identifier = '\u0000 \u000b \ud888 \uffff'
         tree = self.check_error_code(IdDoesNotExist(identifier), 'idDoesNotExist')
 
     def test_error_objects(self):
@@ -221,7 +221,7 @@ class OaiTemplateTest(unittest.TestCase):
         self.check_pattern(tree, pattern)
 
     def check_pattern(self, tree, pattern):
-        if isinstance(pattern, basestring):
+        if isinstance(pattern, str):
             self.assertEqual(tree.text, pattern)
         elif isinstance(pattern, tuple):
             self.check_element(tree, *pattern)
@@ -229,7 +229,7 @@ class OaiTemplateTest(unittest.TestCase):
             for p in pattern:
                 self.check_pattern(tree, p)
         elif isinstance(pattern, dict):
-            for p in pattern.iteritems():
+            for p in pattern.items():
                 self.check_pattern(tree, p)
 
     def check_element(self, parent, tag, pattern):
@@ -253,7 +253,7 @@ class OaiTemplateTest(unittest.TestCase):
                           ''.format(pattern, exception_msg))
 
     def check_attribute(self, element, name, expected):
-        for qualname, value in element.attrib.iteritems():
+        for qualname, value in element.attrib.items():
             if qualname.split('}')[-1] == name:
                 self.assertEqual(value, expected)
                 return
@@ -324,7 +324,7 @@ class TestListFormats(OaiTemplateTest):
 
     def test_formats_for_id(self):
         self.request.params['identifier'] = 'oai:test.com:record'
-        formats = [Format(u'oai_dc'), Format(u'test')]
+        formats = [Format('oai_dc'), Format('test')]
         result = self.render_template({'formats': formats})
         self.check_response(result, {'ListMetadataFormats': [
             ('metadataFormat', {

@@ -100,7 +100,7 @@ def _clean_settings(settings, cleaners):
     ConfigurationError:
         If any setting is missing or invalid.
     """
-    for name, func in cleaners.iteritems():
+    for name, func in cleaners.items():
         if name not in settings:
             raise ConfigurationError('missing setting {0}'.format(name))
 
@@ -137,7 +137,7 @@ def _clean_deleted_records(value):
         raise ValueError('deleted_records must be one of {0}'.format(
             allowed_values
         ))
-    return unicode(value)
+    return str(value)
 
 
 def _clean_boolean(value):
@@ -155,10 +155,10 @@ def _clean_item_list_limit(value):
 
 def _clean_unicode(value):
     """Return the value as a unicode."""
-    if isinstance(value, str):
+    if isinstance(value, bytes):
         return value.decode('utf-8')
     else:
-        return unicode(value)
+        return str(value)
 
 
 def _clean_provider_class(value):
@@ -194,4 +194,4 @@ def _load_repository_descriptions(value):
         return contents
 
     paths = value.split()
-    return map(load_description, paths)
+    return list(map(load_description, paths))

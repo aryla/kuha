@@ -3,13 +3,13 @@ import re
 
 # A regex which matches characters that are not legal in XML.
 # http://www.w3.org/TR/REC-xml/#charsets
-_XML_ILLEGAL_CHARACTERS = re.compile(u'['
-    u'\u0000-\u0008'
-    u'\u000b-\u000c'
-    u'\u000e-\u001f'
-    u'\ud800-\udfff'
-    u'\ufffe-\uffff'
-u']')
+_XML_ILLEGAL_CHARACTERS = re.compile('['
+    '\u0000-\u0008'
+    '\u000b-\u000c'
+    '\u000e-\u001f'
+    '\ud800-\udfff'
+    '\ufffe-\uffff'
+']')
 def filter_illegal_chars(text):
     """Remove unicode characters that are illegal in XML.
 
@@ -23,7 +23,7 @@ def filter_illegal_chars(text):
     unicode:
         Filtered text.
     """
-    return _XML_ILLEGAL_CHARACTERS.sub(u'', text)
+    return _XML_ILLEGAL_CHARACTERS.sub('', text)
 
 
 def contains_illegal_chars(text):

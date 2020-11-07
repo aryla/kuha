@@ -56,7 +56,7 @@ class ViewTestCase(unittest.TestCase):
         """Check that a response contains the expected values."""
         self.assertTrue('time' in response)
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             self.assertEqual(response[key], value)
 
     def check_token(self, response, token):
@@ -179,7 +179,7 @@ class TestListSetsView(ViewTestCase,
         set_mock.list.return_value = sets
         request = testing.DummyRequest(params=self.minimal_params())
         result = self.function(request)
-        self.assertItemsEqual(result['sets'], sets)
+        self.assertCountEqual(result['sets'], sets)
 
     @mock.patch.object(views, 'Datestamp')
     def test_invalid_resumption(self, date_mock):
@@ -295,12 +295,12 @@ class TestListItemsView(ViewTestCase,
 
         self.check_response(result, records=['1', '2'])
         self.check_token(result, {
-            u'verb': u'ListRecords',
-            u'metadataPrefix': u'dummy',
-            u'offset': u'3',
-            u'set': None,
-            u'from': None,
-            u'until': None,
+            'verb': 'ListRecords',
+            'metadataPrefix': 'dummy',
+            'offset': '3',
+            'set': None,
+            'from': None,
+            'until': None,
         })
         mock_func.assert_called_once_with(params, False, 4)
 
@@ -403,11 +403,11 @@ class TestGetRecords(unittest.TestCase):
 
     def setUp(self):
         self.test_params = {
-            u'verb': u'ListRecords',
-            u'metadataPrefix': u'prefix',
-            u'from': u'2014-01-30',
-            u'until': u'2014-02-01',
-            u'set': u'abcde',
+            'verb': 'ListRecords',
+            'metadataPrefix': 'prefix',
+            'from': '2014-01-30',
+            'until': '2014-02-01',
+            'set': 'abcde',
         }
 
     @mock.patch.object(views, 'Format')
@@ -416,7 +416,7 @@ class TestGetRecords(unittest.TestCase):
         self.assertRaises(UnsupportedMetadataFormat,
                           views._get_records,
                           self.test_params, False, 10)
-        format_mock.exists.assert_called_once_with(u'prefix', False)
+        format_mock.exists.assert_called_once_with('prefix', False)
 
     @mock.patch.object(views, 'Format')
     @mock.patch.object(views, 'Set')
@@ -444,7 +444,7 @@ class TestGetRecords(unittest.TestCase):
             metadata_prefix='prefix',
             from_date=datetime(2014, 1, 30, 0, 0, 0),
             until_date=datetime(2014, 2, 1, 23, 59, 59),
-            set_=u'abcde',
+            set_='abcde',
             ignore_deleted=True,
             offset=None, limit=11,
         )
@@ -471,7 +471,7 @@ class TestGetRecords(unittest.TestCase):
             metadata_prefix='prefix',
             from_date=datetime(2014, 1, 30, 0, 0, 0),
             until_date=datetime(2014, 2, 1, 23, 59, 59),
-            set_=u'abcde',
+            set_='abcde',
             ignore_deleted=False,
             offset=None, limit=4,
         )
@@ -681,15 +681,15 @@ class TestCheckParams(unittest.TestCase):
     def test_control_characters(self):
         with self.assertRaises(BadArgument):
             views._check_params(MultiDict(
-                verb=u'ListMetadataFormats',
-                identifier=u'oai:example.org:item\u0000garbage'
+                verb='ListMetadataFormats',
+                identifier='oai:example.org:item\u0000garbage'
             ), allowed=['identifier'])
         with self.assertRaises(BadArgument):
-            params = MultiDict(verb=u'ListRecords')
-            params[u'metadataPrefix\u0000asd'] = u'oai_dc'
+            params = MultiDict(verb='ListRecords')
+            params['metadataPrefix\u0000asd'] = 'oai_dc'
             views._check_params(params, allowed=['metadataPrefix'])
         with self.assertRaises(BadArgument):
-            views._check_params(MultiDict(verb=u'List\uffffRecords'))
+            views._check_params(MultiDict(verb='List\uffffRecords'))
 
 class TestParseFromAndUntil(unittest.TestCase):
 
@@ -717,6 +717,6 @@ class TestParseFromAndUntil(unittest.TestCase):
         from_date, until_date = views._parse_from_and_until(
             '2014-03-03', '2014-04-04')
         self.assertEqual(from_date,
-                         datetime(2014,03,03, 00,00,00))
+                         datetime(2014, 3, 3,  0, 0, 0))
         self.assertEqual(until_date,
-                         datetime(2014,04,04, 23,59,59))
+                         datetime(2014, 4, 4, 23,59,59))

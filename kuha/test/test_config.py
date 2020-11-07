@@ -47,7 +47,7 @@ class TestCleanSettings(unittest.TestCase):
 class TestCleanAdminEmails(unittest.TestCase):
 
     def test_valid_emails(self):
-        emails = u'''
+        emails = '''
             leet@example.org
             admin@test.org
             asd@asd.asd
@@ -56,14 +56,14 @@ class TestCleanAdminEmails(unittest.TestCase):
         result = config._clean_admin_emails(emails)
         self.assertEqual(
             result,
-            [u'leet@example.org',
-             u'admin@test.org',
-             u'asd@asd.asd',
-             u'ä"@"#*\'"\\"\\"ää@ööÖÖ.Ä',
+            ['leet@example.org',
+             'admin@test.org',
+             'asd@asd.asd',
+             'ä"@"#*\'"\\"\\"ää@ööÖÖ.Ä',
             ]
         )
         for r in result:
-            self.assertIs(type(r), unicode)
+            self.assertIs(type(r), str)
 
     def test_invalid_email(self):
         self.assertRaises(ValueError,
@@ -79,15 +79,15 @@ class TestCleanAdminEmails(unittest.TestCase):
 class TestCleanDeletedRecords(unittest.TestCase):
 
     def test_valid_values(self):
-        for v in ['no', u'transient', 'persistent']:
+        for v in ['no', 'transient', 'persistent']:
             result = config._clean_deleted_records(v)
-            self.assertIs(type(result), unicode)
+            self.assertIs(type(result), str)
             self.assertEqual(result, v)
 
     def test_invalid_value(self):
         self.assertRaises(ValueError,
                           config._clean_deleted_records,
-                          u'asd')
+                          'asd')
 
 
 class TestCleanBoolean(unittest.TestCase):
@@ -118,18 +118,18 @@ class TestCleanUnicode(unittest.TestCase):
 
     def test_valid_values(self):
         cases = [
-            ('text', u'text'),
-            (u'arsdÄÖOä', u'arsdÄÖOä'),
-            (u'ÄÖä'.encode('utf-8'), u'ÄÖä'),
+            ('text', 'text'),
+            ('arsdÄÖOä', 'arsdÄÖOä'),
+            ('ÄÖä'.encode('utf-8'), 'ÄÖä'),
         ]
         for input_, expected in cases:
             actual = config._clean_unicode(input_)
             self.assertEqual(actual, expected)
-            self.assertIs(type(actual), unicode)
+            self.assertIs(type(actual), str)
 
     def test_invalid_encoding(self):
         with self.assertRaises(UnicodeError):
-            config._clean_unicode('\xFA')
+            config._clean_unicode(b'\xFA')
 
 
 class TestCleanProviderClass(unittest.TestCase):
@@ -182,7 +182,7 @@ class TestLoadRepositoryDescriptions(unittest.TestCase):
         with mock.patch.object(config, 'open', open_mock, create=True):
             with self.assertRaises(IOError) as cm:
                 config._load_repository_descriptions('file.xml')
-            self.assertIn('cannot read file', cm.exception.message)
+            self.assertIn('cannot read file', str(cm.exception))
         open_mock.assert_called_once_with('file.xml', 'r')
 
     def test_illformed_xml(self):
@@ -190,7 +190,7 @@ class TestLoadRepositoryDescriptions(unittest.TestCase):
         with mock.patch.object(config, 'open', open_mock, create=True):
             with self.assertRaises(ValueError) as cm:
                 config._load_repository_descriptions('file.xml')
-            self.assertIn('ill-formed XML', cm.exception.message)
+            self.assertIn('ill-formed XML', str(cm.exception))
         open_mock.assert_called_once_with('file.xml', 'r')
 
     def test_missing_schema(self):
@@ -205,5 +205,5 @@ class TestLoadRepositoryDescriptions(unittest.TestCase):
         with mock.patch.object(config, 'open', open_mock, create=True):
             with self.assertRaises(ValueError) as cm:
                 config._load_repository_descriptions('file.xml')
-            self.assertIn('no schema location', cm.exception.message)
+            self.assertIn('no schema location', str(cm.exception))
         open_mock.assert_called_once_with('file.xml', 'r')

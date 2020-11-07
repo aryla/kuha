@@ -25,8 +25,8 @@ class SkeletonProvider(object):
         """
         # NOTE: The OAI DC format is required by the OAI-PMH specification.
         return {
-            u'oai_dc': (u'http://www.openarchives.org/OAI/2.0/oai_dc/',
-                        u'http://www.openarchives.org/OAI/2.0/oai_dc.xsd'),
+            'oai_dc': ('http://www.openarchives.org/OAI/2.0/oai_dc/',
+                        'http://www.openarchives.org/OAI/2.0/oai_dc.xsd'),
         }
 
     def identifiers(self):
@@ -38,7 +38,7 @@ class SkeletonProvider(object):
         iterable of unicode:
             OAI identifiers of all items
         """
-        return [u'oai:example.org:123']
+        return ['oai:example.org:123']
 
     def has_changed(self, identifier, since):
         """
@@ -76,8 +76,8 @@ class SkeletonProvider(object):
             hierarchy (e.g. if the result contains the set `a:b:c`, sets
             `a:b` and `a` must also be included).
         """
-        return [(u'example',         u'Example Set'),
-                (u'example:example', u'Example Subset')]
+        return [('example',         'Example Set'),
+                ('example:example', 'Example Subset')]
 
     def get_record(self, identifier, metadata_prefix):
         """

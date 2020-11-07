@@ -34,7 +34,7 @@ def oai_view(wrapped):
         # Get the datestamp before any database queries.
         setattr(request, 'time', datestamp_now())
 
-        if wrapped.func_code.co_argcount == 1:
+        if wrapped.__code__.co_argcount == 1:
             result = wrapped(request)
         else:
             result = wrapped(context, request)
@@ -63,7 +63,7 @@ def oai_error_view(error, request):
 @oai_view
 def invalid_verb_view(request):
     # Called when the verb argument does not match any other view.
-    if u'verb' in request.params:
+    if 'verb' in request.params:
         raise exception.InvalidVerb()
     raise exception.MissingVerb()
 
@@ -115,7 +115,7 @@ def handle_list_sets(request):
              renderer='templates/listformats.pt')
 @oai_view
 def handle_list_metadata_formats(request):
-    _check_params(request.params, allowed=[u'identifier'])
+    _check_params(request.params, allowed=['identifier'])
 
     ignore_deleted = _get_ignore_deleted(request)
     identifier = _get_identifier(request.params, ignore_deleted)
@@ -139,23 +139,23 @@ def handle_list_metadata_formats(request):
              renderer='templates/listrecords.pt')
 @oai_view
 def handle_list_items(request):
-    limit = request.registry.settings[u'item_list_limit']
+    limit = request.registry.settings['item_list_limit']
 
     token_params = _get_resumption_token(request)
     has_token = (token_params is not None)
     params = token_params or request.params
 
     if has_token:
-        required = [u'metadataPrefix',
-                    u'offset',
-                    u'date',
-                    u'from',
-                    u'until',
-                    u'set']
+        required = ['metadataPrefix',
+                    'offset',
+                    'date',
+                    'from',
+                    'until',
+                    'set']
         allowed = []
     else:
-      required = [u'metadataPrefix']
-      allowed = [u'from', u'until', u'set']
+      required = ['metadataPrefix']
+      allowed = ['from', 'until', 'set']
 
     try:
         _check_params(params, required=required, allowed=allowed)
@@ -187,13 +187,13 @@ def _create_resumption_token(params, offset, time):
     request.
     """
     return json.dumps({
-        'verb': params[u'verb'],
-        'metadataPrefix': params[u'metadataPrefix'],
+        'verb': params['verb'],
+        'metadataPrefix': params['metadataPrefix'],
         'offset': offset,
         'date': format_datestamp(time),
-        'from': params.get(u'from', None),
-        'until': params.get(u'until', None),
-        'set': params.get(u'set', None),
+        'from': params.get('from', None),
+        'until': params.get('until', None),
+        'set': params.get('set', None),
     })
 
 
@@ -203,7 +203,7 @@ def _create_resumption_token(params, offset, time):
 @oai_view
 def handle_get_record(request):
     _check_params(request.params,
-                  required=[u'identifier', u'metadataPrefix'])
+                  required=['identifier', 'metadataPrefix'])
 
     ignore_deleted = _get_ignore_deleted(request)
     identifier = _get_identifier(request.params, ignore_deleted)
@@ -246,35 +246,35 @@ def _check_params(params, required=[], allowed=[]):
         If some arguments are missing, illegal or repeated.
     """
     # Check verb.
-    if u'verb' not in params:
+    if 'verb' not in params:
         raise exception.MissingVerb()
-    if hasattr(params, 'getall') and len(params.getall(u'verb')) > 1:
+    if hasattr(params, 'getall') and len(params.getall('verb')) > 1:
         raise exception.RepeatedVerb()
 
     for name in params:
         is_expected = (
-            (name == u'verb') or
+            (name == 'verb') or
             (name in allowed) or
             (name in required)
         )
         if not is_expected:
-            raise exception.BadArgument(u'Illegal argument: "%s"' % name)
+            raise exception.BadArgument('Illegal argument: "%s"' % name)
 
         is_repeated = (
             hasattr(params, 'getall') and
             len(params.getall(name)) > 1
         )
         if is_repeated:
-            raise exception.BadArgument(u'Repeated argument: "%s"' % name)
+            raise exception.BadArgument('Repeated argument: "%s"' % name)
 
         value = params.get(name)
         if value is not None and contains_illegal_chars(value):
-            raise exception.BadArgument(u'Invalid argument: "%s"' % name)
+            raise exception.BadArgument('Invalid argument: "%s"' % name)
 
     # Check required arguments.
     for p in required:
         if p not in params:
-            raise exception.BadArgument(u'Missing argument: "%s"' % p)
+            raise exception.BadArgument('Missing argument: "%s"' % p)
 
 
 def _get_resumption_token(request):
@@ -305,24 +305,24 @@ def _get_resumption_token(request):
         The parsed resumption token dict, or ``None`` if there is no
         request token in the parameters.
     """
-    if u'resumptionToken' not in request.params:
+    if 'resumptionToken' not in request.params:
         return None
     # No other arguments allowed with resumptionToken.
-    _check_params(request.params, required=[u'resumptionToken'])
+    _check_params(request.params, required=['resumptionToken'])
     try:
-        parsed = json.loads(request.params[u'resumptionToken'])
+        parsed = json.loads(request.params['resumptionToken'])
     except:
         raise exception.InvalidResumptionToken()
 
     # Check types.
     if type(parsed) is not dict:
         raise exception.InvalidResumptionToken()
-    for k, v in parsed.iteritems():
-        if (v is not None) and (not isinstance(v, basestring)):
+    for k, v in parsed.items():
+        if (v is not None) and (not isinstance(v, str)):
             raise exception.InvalidResumptionToken()
 
     # Check verb.
-    if parsed.get(u'verb', None) != request.params[u'verb']:
+    if parsed.get('verb', None) != request.params['verb']:
         raise exception.InvalidResumptionToken()
 
     # Check date.
@@ -347,7 +347,7 @@ def _check_resumption_token_date(token):
         If the resumption token has expired.
     """
     try:
-        date, _ = parse_date(token[u'date'])
+        date, _ = parse_date(token['date'])
     except:
         raise exception.InvalidResumptionToken()
     latest = Datestamp.get()
@@ -365,7 +365,7 @@ def _get_metadata_prefix(params, ignore_deleted):
     If the metadata prefix is not supported, raise
     ``UnsupportedMetadataFormat``. Otherwise return the prefix.
     """
-    prefix = params[u'metadataPrefix']
+    prefix = params['metadataPrefix']
     if not Format.exists(prefix, ignore_deleted):
         raise exception.UnsupportedMetadataFormat(prefix)
     return prefix
@@ -390,9 +390,9 @@ def _get_identifier(params, ignore_deleted):
     contains an invalid identifier, raise ``IdDoesNotExist``. Otherwise
     return the identifier.
     """
-    if u'identifier' not in params:
+    if 'identifier' not in params:
         return None
-    identifier = params[u'identifier']
+    identifier = params['identifier']
     if not Item.exists(identifier, ignore_deleted):
         raise exception.IdDoesNotExist(identifier)
     return identifier
@@ -432,19 +432,19 @@ def _get_records(params, ignore_deleted, limit):
     prefix = _get_metadata_prefix(params, ignore_deleted)
 
     from_date, until_date = _parse_from_and_until(
-        params.get(u'from'), params.get(u'until'),
+        params.get('from'), params.get('until'),
     )
 
-    if params.get(u'set') is not None and len(Set.list()) == 0:
+    if params.get('set') is not None and len(Set.list()) == 0:
         raise exception.NoSetHierarchy()
 
     records = Record.list(
         metadata_prefix=prefix,
         from_date=from_date,
         until_date=until_date,
-        set_=params.get(u'set'),
+        set_=params.get('set'),
         ignore_deleted=ignore_deleted,
-        offset=params.get(u'offset'),
+        offset=params.get('offset'),
 
         # Try to fetch one extra record to see wheter there are records
         # left, i.e. wheter we need to send a resumption token.
@@ -490,7 +490,7 @@ def _parse_from_and_until(from_date_str, until_date_str):
         try:
             from_date, from_granularity = parse_date(from_date_str)
         except ValueError:
-            raise exception.BadArgument(u'Illegal "from" datestamp')
+            raise exception.BadArgument('Illegal "from" datestamp')
 
     until_date = None
     until_granularity = None
@@ -501,15 +501,15 @@ def _parse_from_and_until(from_date_str, until_date_str):
                 datetime.time(23, 59, 59),
             )
         except ValueError:
-            raise exception.BadArgument(u'Illegal "until" datestamp')
+            raise exception.BadArgument('Illegal "until" datestamp')
 
     if (from_date is not None and until_date is not None):
         if (from_granularity != until_granularity):
             raise exception.BadArgument(
-                u'Datestamps "from" and "until" have different granularity'
+                'Datestamps "from" and "until" have different granularity'
             )
         if (from_date > until_date):
             raise exception.BadArgument(
-                u'Datestamp "from" is greater than "until"'
+                'Datestamp "from" is greater than "until"'
             )
     return from_date, until_date
