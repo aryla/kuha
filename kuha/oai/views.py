@@ -435,7 +435,7 @@ def _get_records(params, ignore_deleted, limit):
         params.get(u'from'), params.get(u'until'),
     )
 
-    if u'set' in params and len(Set.list()) == 0:
+    if params.get(u'set') is not None and len(Set.list()) == 0:
         raise exception.NoSetHierarchy()
 
     records = Record.list(
