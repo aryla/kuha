@@ -1,11 +1,15 @@
-*.pyc
-*.sqlite
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Other
 .coverage
-.noseids
-build/*
-dist/*
-env/*
-Kuha.egg-info
+*.sqlite
 last_update
-setuptools-*.egg
-setuptools-*.zip

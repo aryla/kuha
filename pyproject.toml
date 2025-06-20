@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kuha"
+version = "0.1.0"
+description = "An OAI-PMH Data Provider implementation"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers=[
+    "Programming Language :: Python :: 3",
+    "Framework :: Pyramid",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+]
+keywords=["web", "wsgi", "bfg", "pylons", "pyramid", "oai", "xml"]
+dependencies = [
+    "lxml>=5.4.0",
+    "mock>=5.2.0",
+    "pip>=25.1.1",
+    "pyramid>=2.0.2",
+    "pyramid-chameleon>=0.3",
+    "pyramid-debugtoolbar>=4.12.1",
+    "pyramid-tm>=2.6",
+    "sqlalchemy>=2.0.41",
+    "transaction>=5.0",
+    "waitress>=3.0.2",
+    "zope-sqlalchemy>=3.1",
+]
+
+[project.entry-points."paste.app_factory"]
+main = "kuha.oai:main"
+
+[project.scripts]
+kuha_import = "kuha.importer:main"
+
+[tool.setuptools.package-data]
+"*" = [
+    "*.pt",
+    "*.xml",
+    "*.xsd",
+    "CHANGES.txt",
+    "LICENSE.txt",
+    "example.ini",
+]
