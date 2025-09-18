@@ -106,8 +106,7 @@ def main(argv=sys.argv):
                   ''.format(classname, modulename))
         provider_module = importlib.import_module(modulename)
         Provider = getattr(provider_module, classname)
-        args = settings['metadata_provider_args'].split()
-        metadata_provider = Provider(*args)
+        metadata_provider = Provider(settings)
     except Exception as error:
         log.critical(
             'Failed to initialize the metadata provider: {0}'

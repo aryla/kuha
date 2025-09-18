@@ -54,7 +54,6 @@ def clean_importer_settings(settings):
         sqlalchemy.url
         timestamp_file
         metadata_provider_class
-        metadata_provider_args
 
     Parameters
     ----------
@@ -73,7 +72,6 @@ def clean_importer_settings(settings):
         'logging_config': _clean_unicode,
         'sqlalchemy.url': _clean_unicode,
         'timestamp_file': _clean_unicode,
-        'metadata_provider_args': _clean_unicode,
         'metadata_provider_class': _clean_provider_class,
     }
     return _clean_settings(settings, cleaners)

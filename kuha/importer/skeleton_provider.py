@@ -3,14 +3,14 @@ class SkeletonProvider(object):
     A skeleton of a metadata provider.
     """
 
-    def __init__(self, *args):
+    def __init__(self, settings):
         """
         Initialize the metadata provider.
 
         Parameters
         ----------
-        args:
-            Arguments given in the config file.
+        settings: dict
+            Settings from the config file.
         """
 
     def formats(self):

@@ -44,20 +44,19 @@ Kuha comes with a simple module for converting [DDI Codebook][] files to
 unqualified [Dublin Core][]. You can configure Kuha to use this
 module by settings the `metadata_provider_class` option to
 `kuha.importer.ddi_file_provider:DdiFileProvider`. The module needs two
-arguments: a domain name for the OAI identifier and a path of the
-directory to scan. Set these in the `metadata_provider_args` setting.
+additional settings: a domain name for the OAI identifier and a path of the
+directory to scan. Configure these as `oai_domain_name` and
+`ddi_directory` in the configuration file.
 
 Example:
 
 ```
 # my_config.ini
-
 metadata_provider_class =
    kuha.importer.ddi_file_provider:DdiFileProvider
 
-metadata_provider_args =
-   my.organization.org
-   /srv/metadata
+oai_domain_name = my.organization.org
+ddi_directory = /srv/metadata
 
 # ...
 ```
@@ -73,7 +72,7 @@ Run the metadata import.
 $ kuha_import my_config.ini
 ```
 
-Start the OAI-PMH serverk
+Start the OAI-PMH server.
 
 ```
 $ pserve my_config.ini
@@ -93,9 +92,9 @@ See comments in those files for details.
 
 To make Kuha use your custom metadata provider, set the
 `metadata_provider_class` setting to the Python name of the class
-(e.g. `name.of.the.module:NameOfTheClass`). The value of the
-`metadata_provider_args` setting is split at whitespace and the
-resulting parts are passed to the constructor of the class.
+(e.g. `name.of.the.module:NameOfTheClass`). The `app:main` section of
+the configuration file is passed to the constructor of the class as
+a dictionary.
 
 [OAI-PMH]: http://www.openarchives.org/pmh/
            "Open Archives Initiative Protocol for Metadata Harvesting"

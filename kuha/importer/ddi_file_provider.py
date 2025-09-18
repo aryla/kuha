@@ -12,19 +12,22 @@ class DdiFileProvider(object):
     DDI Codebook to OAI DC.
     """
 
-    def __init__(self, domain_name='example.org', directory='.'):
+    def __init__(self, settings):
         """
         Initialize the metadata provider.
 
         Parameters
         ----------
-        directory: str
-            Path of the directory to scan for DDI files.
+        settings: dict
+            Must contain the following keys:
+                "oai_domain_name": str
+                    The domain name part of the OAI identifiers.
+                "ddi_directory": str
+                    Path of the directory to scan for DDI files.
         domain_name: str
-            The domain name part of the OAI identifiers.
         """
-        self.oai_identifier_prefix = 'oai:{0}:'.format(domain_name)
-        self.directory = directory
+        self.oai_identifier_prefix = 'oai:{0}:'.format(settings['oai_domain_name'])
+        self.directory = settings['ddi_directory']
 
     def formats(self):
         """
